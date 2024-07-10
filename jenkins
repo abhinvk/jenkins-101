@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+    triggers {
+        pollSCM('* * * * *')
+    }
+    stages {
+        stage('Install Python') {
+            steps {
+                echo "Installing Python..."
+                bat '''
+                if not exist "C:\\Python39" (
+                    echo "Downloading Python..."
+                    powershell -command "& {Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.5/python-3.9.5-amd64.exe -OutFile python-installer.exe}"
+                    echo "Installing Python..."
+                    start /wait python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
+                    echo "Cleaning up..."
+                    del python-installer.exe
+                )
+                '''
+            }
+        }
+        stage('Install Packages') {
+            steps {
+                echo "Installing required packages..."
+                bat '''
+                cd myapp
+                if not exist "C:\\Python39\\Scripts\\pip.exe" (
+                    echo "Installing pip..."
+                    powershell -command "& {Invoke-WebRequest -Uri https://bootstrap.pypa.io/get-pip.py -OutFile get-pip.py}"
+                    python get-pip.py
+                    del get-pip.py
+                )
+                pip install -r requirements.txt
+                '''
+            }
+        }
+        stage('Build') {
+            steps {
+                echo "Building..."
+                bat '''
+                cd myapp
+                echo "Doing build stuff..."
+                '''
+            }
+        }
+        stage('Test') {
+            steps {
+                echo "Testing..."
+                bat '''
+                cd myapp
+                python hello.py
+                python hello.py --name=Brad
+                '''
+            }
+        }
+        stage('Deliver') {
+            steps {
+                echo 'Delivering...'
+                bat '''
+                echo "Doing delivery stuff..."
+                '''
+            }
+        }
+    }
+}
