@@ -20,7 +20,7 @@ pipeline {
                     del %PYTHON_INSTALLER%
                 )
 
-                set PATH=C:\\Python39;C:\\Python39\\Scripts;%PATH%
+                setx PATH "C:\\Python39;C:\\Python39\\Scripts;%PATH%"
 
                 if not exist "C:\\Python39\\Scripts\\pip.exe" (
                     echo "Installing pip..."
@@ -28,8 +28,6 @@ pipeline {
                     C:\\Python39\\python.exe get-pip.py
                     del get-pip.py
                 )
-
-                set PATH=C:\\Python39;C:\\Python39\\Scripts;%PATH%
                 '''
             }
         }
