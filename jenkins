@@ -1,61 +1,26 @@
 pipeline {
-    agent any
+    agent {
+        node {
+            label 'docker-agent-python'
+        }
+    }
     triggers {
-        pollSCM('* * * * *')
+        pollSCM '* * * * *'
     }
     stages {
-        stage('Setup Environment') {
+        stage('Build') {
             steps {
-                echo "Setting up Python environment..."
+                echo "Building.."
                 bat '''
-                set PYTHON_VERSION=3.9.5
-                set PYTHON_INSTALLER=python-%PYTHON_VERSION%-amd64.exe
-
-                if not exist "C:\\Python39" (
-                    echo "Downloading Python..."
-                    powershell -command "& {Invoke-WebRequest -Uri https://www.python.org/ftp/python/%PYTHON_VERSION%/%PYTHON_INSTALLER% -OutFile %PYTHON_INSTALLER%}"
-                    echo "Installing Python..."
-                    start /wait %PYTHON_INSTALLER% /quiet InstallAllUsers=1 PrependPath=1
-                    echo "Cleaning up..."
-                    del %PYTHON_INSTALLER%
-                )
-
-                setx PATH "C:\\Python39;C:\\Python39\\Scripts;%PATH%"
-
-                if not exist "C:\\Python39\\Scripts\\pip.exe" (
-                    echo "Installing pip..."
-                    powershell -command "& {Invoke-WebRequest -Uri https://bootstrap.pypa.io/get-pip.py -OutFile get-pip.py}"
-                    C:\\Python39\\python.exe get-pip.py
-                    del get-pip.py
-                )
-                '''
-            }
-        }
-        stage('Install Packages') {
-            steps {
-                echo "Installing required packages..."
-                bat '''
-                set PATH=C:\\Python39;C:\\Python39\\Scripts;%PATH%
                 cd myapp
                 pip install -r requirements.txt
                 '''
             }
         }
-        stage('Build') {
-            steps {
-                echo "Building..."
-                bat '''
-                set PATH=C:\\Python39;C:\\Python39\\Scripts;%PATH%
-                cd myapp
-                echo "Doing build stuff..."
-                '''
-            }
-        }
         stage('Test') {
             steps {
-                echo "Testing..."
+                echo "Testing.."
                 bat '''
-                set PATH=C:\\Python39;C:\\Python39\\Scripts;%PATH%
                 cd myapp
                 python hello.py
                 python hello.py --name=Brad
@@ -64,10 +29,9 @@ pipeline {
         }
         stage('Deliver') {
             steps {
-                echo 'Delivering...'
+                echo 'Deliver....'
                 bat '''
-                set PATH=C:\\Python39;C:\\Python39\\Scripts;%PATH%
-                echo "Doing delivery stuff..."
+                echo "doing delivery stuff.."
                 '''
             }
         }
