@@ -1,29 +1,25 @@
 pipeline {
-   agent:any
+    agent any  // Use any available agent for running the pipeline
+
     stages {
-        stage('Build') {
+        stage('Build') { // Define the Build stage
             steps {
-                echo "Building.."
-                sh '''
-                echo "doing build stuff.."
-                '''
+                echo 'Building...' // Execute a simple echo command
+                bat 'echo "Doing build stuff..."' // Execute a batch command for Windows
             }
         }
-        stage('Test') {
+        stage('Test') { // Define the Test stage
             steps {
-                echo "Testing.."
-                sh '''
-                echo "doing test stuff..
-                '''
+                echo 'Testing...'
+                bat 'echo "Doing test stuff..."'
             }
         }
-        stage('Deliver') {
+        stage('Deploy') { // Define the Deploy stage
             steps {
-                echo 'Deliver....'
-                sh '''
-                echo "doing delivery stuff.."
-                '''
+                echo 'Deploying...'
+                bat 'echo "Doing deploy stuff..."'
             }
         }
     }
 }
+
