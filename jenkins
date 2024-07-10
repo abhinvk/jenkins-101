@@ -4,18 +4,30 @@ pipeline {
         pollSCM('* * * * *')
     }
     stages {
-        stage('Install Python') {
+        stage('Setup Environment') {
             steps {
-                echo "Installing Python..."
+                echo "Setting up Python environment..."
                 bat '''
+                set PYTHON_VERSION=3.9.5
+                set PYTHON_INSTALLER=python-%PYTHON_VERSION%-amd64.exe
+
                 if not exist "C:\\Python39" (
                     echo "Downloading Python..."
-                    powershell -command "& {Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.5/python-3.9.5-amd64.exe -OutFile python-installer.exe}"
+                    powershell -command "& {Invoke-WebRequest -Uri https://www.python.org/ftp/python/%PYTHON_VERSION%/%PYTHON_INSTALLER% -OutFile %PYTHON_INSTALLER%}"
                     echo "Installing Python..."
-                    start /wait python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
+                    start /wait %PYTHON_INSTALLER% /quiet InstallAllUsers=1 PrependPath=1
                     echo "Cleaning up..."
-                    del python-installer.exe
+                    del %PYTHON_INSTALLER%
                 )
+
+                if not exist "C:\\Python39\\Scripts\\pip.exe" (
+                    echo "Installing pip..."
+                    powershell -command "& {Invoke-WebRequest -Uri https://bootstrap.pypa.io/get-pip.py -OutFile get-pip.py}"
+                    python get-pip.py
+                    del get-pip.py
+                )
+
+                set PATH=C:\\Python39;C:\\Python39\\Scripts;%PATH%
                 '''
             }
         }
@@ -24,12 +36,6 @@ pipeline {
                 echo "Installing required packages..."
                 bat '''
                 cd myapp
-                if not exist "C:\\Python39\\Scripts\\pip.exe" (
-                    echo "Installing pip..."
-                    powershell -command "& {Invoke-WebRequest -Uri https://bootstrap.pypa.io/get-pip.py -OutFile get-pip.py}"
-                    python get-pip.py
-                    del get-pip.py
-                )
                 pip install -r requirements.txt
                 '''
             }
